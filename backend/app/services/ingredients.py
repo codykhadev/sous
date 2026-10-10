@@ -54,6 +54,16 @@ QUANTITY_RE = re.compile(
 )
 # The lookahead stops "c" matching the start of "chopped" and "in" the start of "into".
 UNIT_RE = re.compile(rf"^(?P<unit>{UNIT_PATTERN})\.?(?=[\s,()]|$)(?:\s+of\b)?", re.IGNORECASE)
+# Text after a comma is a note only if it reads like prep ("diced", "finely chopped", "to taste", "about 1 cup"),
+# so commas inside a name ("boneless, skinless chicken") are kept.
+NOTE_START_RE = re.compile(
+    r"^(\w+(ed|ly)\b|to|at|for|plus|about|or|optional|divided|cut|room|such|preferably|with|without|if|as|\d)",
+    re.IGNORECASE,
+)
+ALT_MEASURE_RE = re.compile(rf"^/\s*(?P<measure>(?:{NUMBER})\s*(?:{UNIT_PATTERN})\.?)(?=[\s,]|$)", re.IGNORECASE)
+EXTRA_MEASURE_RE = re.compile(
+    rf"^(?P<measure>(?:plus|minus)\s+(?:{NUMBER})\s*(?:{UNIT_PATTERN}))\.?(?=[\s,]|$)", re.IGNORECASE
+)
 TRAILING_NOTE_RE = re.compile(r"\s+(to taste|as needed|for serving|for garnish|optional)$", re.IGNORECASE)
 
 
@@ -74,6 +84,34 @@ def _normalize(text: str) -> str:
     text = re.sub(r"^[\s•*▢□◦-]+", "", text)
     text = re.sub(r"(\d)([a-zA-Z])", r"\1 \2", text)
     return re.sub(r"\s+", " ", text).strip()
+
+
+def _split_parentheses(text: str) -> tuple[str, list[str]]:
+    outside: list[str] = []
+    groups: list[str] = []
+    depth = 0
+    current = ""
+    for char in text:
+        if char == "(":
+            if depth:
+                current += char
+            depth += 1
+        elif char == ")" and depth:
+            depth -= 1
+            if depth:
+                current += char
+            else:
+                groups.append(current)
+                current = ""
+                outside.append(" ")
+        elif depth:
+            current += char
+        elif char != ")":
+            outside.append(char)
+    if current:
+        groups.append(current)
+    cleaned = [g.strip(" ,;") for g in groups]
+    return re.sub(r"\s+", " ", "".join(outside)).strip(), [g for g in cleaned if g]
 
 
 def _to_number(token: str) -> float:
@@ -106,10 +144,7 @@ def _match_unit(rest: str) -> tuple[str | None, str]:
 def parse_ingredient(raw: str) -> ParsedIngredient:
     text = _normalize(raw)
     result = ParsedIngredient()
-    notes: list[str] = []
-
-    notes.extend(n.strip() for n in re.findall(r"\(([^)]*)\)", text) if n.strip())
-    text = re.sub(r"\s*\([^)]*\)\s*", " ", text).strip()
+    text, notes = _split_parentheses(text)
 
     match = QUANTITY_RE.match(text)
     if match:
@@ -127,12 +162,23 @@ def parse_ingredient(raw: str) -> ParsedIngredient:
             if match.group("high"):
                 result.quantity_max = _to_number(match.group("high"))
             result.unit, rest = _match_unit(rest)
+            alt = ALT_MEASURE_RE.match(rest) if result.unit else None
+            if alt:
+                notes.insert(0, alt.group("measure"))
+                rest = rest[alt.end():].strip()
+            extra = EXTRA_MEASURE_RE.match(rest) if result.unit else None
+            if extra:
+                notes.insert(0, extra.group("measure"))
+                rest = rest[extra.end():].strip()
     else:
         rest = text
 
-    if "," in rest:
-        rest, after_comma = rest.split(",", 1)
-        notes.append(after_comma.strip())
+    parts = rest.split(",")
+    for i in range(1, len(parts)):
+        if NOTE_START_RE.match(parts[i].strip()):
+            notes.append(",".join(parts[i:]).strip())
+            rest = ",".join(parts[:i])
+            break
 
     trailing = TRAILING_NOTE_RE.search(rest)
     if trailing:
