@@ -5,3 +5,4 @@ CLAUDE.md
 **/.pytest_cache
 backend/venv
 frontend/dist
+.env
