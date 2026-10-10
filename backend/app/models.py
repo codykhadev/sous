@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy import ARRAY, DateTime, Float, ForeignKey, Integer, String, Text, func
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, func
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -38,8 +39,10 @@ class Ingredient(Base):
     position: Mapped[int] = mapped_column(Integer)
     raw: Mapped[str] = mapped_column(Text)
     quantity: Mapped[float | None] = mapped_column(Float)
+    quantity_max: Mapped[float | None] = mapped_column(Float)
     unit: Mapped[str | None] = mapped_column(String(30))
     name: Mapped[str | None] = mapped_column(Text)
+    note: Mapped[str | None] = mapped_column(Text)
 
     recipe: Mapped[Recipe] = relationship(back_populates="ingredients")
 
