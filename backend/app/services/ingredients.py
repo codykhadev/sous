@@ -60,6 +60,10 @@ NOTE_START_RE = re.compile(
     r"^(\w+(ed|ly)\b|to|at|for|plus|about|or|optional|divided|cut|room|such|preferably|with|without|if|as|\d)",
     re.IGNORECASE,
 )
+ALT_MEASURE_RE = re.compile(rf"^/\s*(?P<measure>(?:{NUMBER})\s*(?:{UNIT_PATTERN})\.?)(?=[\s,]|$)", re.IGNORECASE)
+EXTRA_MEASURE_RE = re.compile(
+    rf"^(?P<measure>(?:plus|minus)\s+(?:{NUMBER})\s*(?:{UNIT_PATTERN}))\.?(?=[\s,]|$)", re.IGNORECASE
+)
 TRAILING_NOTE_RE = re.compile(r"\s+(to taste|as needed|for serving|for garnish|optional)$", re.IGNORECASE)
 
 
@@ -158,6 +162,14 @@ def parse_ingredient(raw: str) -> ParsedIngredient:
             if match.group("high"):
                 result.quantity_max = _to_number(match.group("high"))
             result.unit, rest = _match_unit(rest)
+            alt = ALT_MEASURE_RE.match(rest) if result.unit else None
+            if alt:
+                notes.insert(0, alt.group("measure"))
+                rest = rest[alt.end():].strip()
+            extra = EXTRA_MEASURE_RE.match(rest) if result.unit else None
+            if extra:
+                notes.insert(0, extra.group("measure"))
+                rest = rest[extra.end():].strip()
     else:
         rest = text
 
