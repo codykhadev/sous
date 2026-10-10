@@ -20,6 +20,12 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
+    # Tests pass their own connection so migrations run against the test database.
+    connection = config.attributes.get("connection")
+    if connection is not None:
+        context.configure(connection=connection, target_metadata=target_metadata)
+        context.run_migrations()
+        return
     with engine.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
