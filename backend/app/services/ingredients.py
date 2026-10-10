@@ -82,6 +82,34 @@ def _normalize(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def _split_parentheses(text: str) -> tuple[str, list[str]]:
+    outside: list[str] = []
+    groups: list[str] = []
+    depth = 0
+    current = ""
+    for char in text:
+        if char == "(":
+            if depth:
+                current += char
+            depth += 1
+        elif char == ")" and depth:
+            depth -= 1
+            if depth:
+                current += char
+            else:
+                groups.append(current)
+                current = ""
+                outside.append(" ")
+        elif depth:
+            current += char
+        elif char != ")":
+            outside.append(char)
+    if current:
+        groups.append(current)
+    cleaned = [g.strip(" ,;") for g in groups]
+    return re.sub(r"\s+", " ", "".join(outside)).strip(), [g for g in cleaned if g]
+
+
 def _to_number(token: str) -> float:
     whole = 0.0
     parts = token.split()
@@ -112,10 +140,7 @@ def _match_unit(rest: str) -> tuple[str | None, str]:
 def parse_ingredient(raw: str) -> ParsedIngredient:
     text = _normalize(raw)
     result = ParsedIngredient()
-    notes: list[str] = []
-
-    notes.extend(n.strip() for n in re.findall(r"\(([^)]*)\)", text) if n.strip())
-    text = re.sub(r"\s*\([^)]*\)\s*", " ", text).strip()
+    text, notes = _split_parentheses(text)
 
     match = QUANTITY_RE.match(text)
     if match:

@@ -61,6 +61,11 @@ def p(quantity=None, quantity_max=None, unit=None, name=None, note=None) -> Pars
         ("1 onion, about 1 cup", p(1, name="onion", note="about 1 cup")),
         ("2 tbsp butter, at room temperature", p(2, unit="tbsp", name="butter", note="at room temperature")),
         ("1 cup parsley, finely chopped", p(1, unit="cup", name="parsley", note="finely chopped")),
+        ("2 1/2 cups beef stock (, low-sodium (note 4))", p(2.5, unit="cup", name="beef stock", note="low-sodium (note 4)")),
+        ("3 garlic cloves (, finely minced)", p(3, name="garlic cloves", note="finely minced")),
+        ("1 tbsp fresh tarragon (, finely chopped (Note 5))", p(1, unit="tbsp", name="fresh tarragon", note="finely chopped (Note 5)")),
+        ("1 cup milk (whole", p(1, unit="cup", name="milk", note="whole")),
+        ("1 cup milk) whole", p(1, unit="cup", name="milk whole")),
         ("2 carrots, peeled and cut into 1-inch pieces", p(2, name="carrots", note="peeled and cut into 1-inch pieces")),
     ],
 )
