@@ -40,5 +40,3 @@ make backend                # FastAPI on :8000 (stop the Docker backend first: d
 cd frontend && npm install && cd ..
 make frontend               # Vite on :5173, proxies /api to :8000
 ```
-
-Tests: `make test`
