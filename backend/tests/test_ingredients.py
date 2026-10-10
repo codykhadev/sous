@@ -55,6 +55,12 @@ def p(quantity=None, quantity_max=None, unit=None, name=None, note=None) -> Pars
         ("▢ 2 tbsp butter", p(2, unit="tbsp", name="butter")),
         ("1 cup  rolled   oats", p(1, unit="cup", name="rolled oats")),
         ("3 cups water, divided", p(3, unit="cup", name="water", note="divided")),
+        ("1 lb. boneless, skinless chicken breast", p(1, unit="lb", name="boneless, skinless chicken breast")),
+        ("1 lb boneless, skinless chicken thighs, cut into cubes", p(1, unit="lb", name="boneless, skinless chicken thighs", note="cut into cubes")),
+        ("1 yellow onion, diced ($0.32)", p(1, name="yellow onion", note="$0.32, diced")),
+        ("1 onion, about 1 cup", p(1, name="onion", note="about 1 cup")),
+        ("2 tbsp butter, at room temperature", p(2, unit="tbsp", name="butter", note="at room temperature")),
+        ("1 cup parsley, finely chopped", p(1, unit="cup", name="parsley", note="finely chopped")),
         ("2 carrots, peeled and cut into 1-inch pieces", p(2, name="carrots", note="peeled and cut into 1-inch pieces")),
     ],
 )
