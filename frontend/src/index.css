@@ -1,0 +1,12 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-cream: #fff8f0;
+  --color-ink: #2b2118;
+  --color-paprika: #b4532a;
+  --font-display: Georgia, 'Times New Roman', serif;
+}
+
+body {
+  @apply bg-cream text-ink antialiased;
+}

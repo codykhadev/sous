@@ -1,0 +1,7 @@
+.git
+CLAUDE.md
+**/node_modules
+**/__pycache__
+**/.pytest_cache
+backend/venv
+frontend/dist
